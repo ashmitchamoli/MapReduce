@@ -1,0 +1,19 @@
+#!/usr/bin/bash
+
+STREAM_JAR=$1
+LOCAL_INP_DIR=$2
+HDFS_INP=$3
+HDFS_OUT=$4
+FILES="./"
+
+# put files on hdfs
+hdfs dfs -rm -r ${HDFS_INP}/ ${HDFS_OUT}/
+hdfs dfs -mkdir -p ${HDFS_INP}/
+hdfs dfs -put ${LOCAL_INP_DIR}/* ${HDFS_INP}/
+hadoop jar $STREAM_JAR -D mapred.reduce.tasks=3 \
+                       -input ${HDFS_INP}/ \
+                       -output $HDFS_OUT/ \
+                       -mapper ${FILES}/mapper.py \
+                       -file ${FILES}/mapper.py \
+                       -reducer ${FILES}/reducer.py \
+                       -file ${FILES}/reducer.py

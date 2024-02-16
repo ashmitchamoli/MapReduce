@@ -6,7 +6,7 @@ HDFS_OUT=$4
 FILES=$5
 
 # put files on hdfs
-hdfs dfs -rm -r ${HDFS_INP}example_input
+hdfs dfs -rm -r ${HDFS_INP}example_input ${HDFS_OUT}example_output/
 hdfs dfs -mkdir -p ${HDFS_INP}example_input/
 hdfs dfs -put ${LOCAL_INP} ${HDFS_INP}example_input/
 hadoop jar $STREAM_JAR -input ${HDFS_INP}example_input/ -output $HDFS_OUT/example_output/ -mapper ${FILES}mapper -file ${FILES}mapper -reducer ${FILES}reducer -file ${FILES}reducer
