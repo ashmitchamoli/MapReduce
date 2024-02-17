@@ -4,24 +4,27 @@ STREAM_JAR=$1
 LOCAL_INP_DIR=$2
 HDFS_INP=$3
 HDFS_OUT=$4
-TEMP_DIR=${HDFS_OUT}/temp/
+HDFS_TEMP=temp/
 FILES="./"
 
-hdfs dfs -rm -r ${HDFS_INP}/ ${HDFS_OUT}/
+hdfs dfs -rm -r ${HDFS_INP}/ ${HDFS_OUT}/ ${HDFS_TEMP}/
 hdfs dfs -mkdir -p ${HDFS_INP}/
 hdfs dfs -put ${LOCAL_INP_DIR}/* ${HDFS_INP}/
+
 hadoop jar $STREAM_JAR -D mapred.reduce.tasks=3 \
                        -input ${HDFS_INP}/ \
-                       -output ${TEMP_DIR}/ \
+                       -output ${HDFS_TEMP}/ \
                        -mapper ${FILES}/mapper0.py \
                        -file ${FILES}/mapper0.py \
                        -reducer ${FILES}/reducer0.py \
                        -file ${FILES}/reducer0.py
 
 hadoop jar $STREAM_JAR -D mapred.reduce.tasks=3 \
-                       -input ${TEMP_DIR}/ \
+                       -input ${HDFS_TEMP}/ \
                        -output ${HDFS_OUT}/ \
                        -mapper ${FILES}/mapper1.py \
                        -file ${FILES}/mapper1.py \
                        -reducer ${FILES}/reducer1.py \
-                       -file ${FILES}/reducer1.py
+                       -file ${FILES}/reducer1.py\
+
+hdfs dfs -rm -r ${HDFS_TEMP}/

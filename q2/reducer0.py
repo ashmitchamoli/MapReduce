@@ -1,4 +1,4 @@
-#!/user/bin/env python3
+#!/usr/bin/env python3
 """reducer0.py"""
 import sys
 
@@ -8,8 +8,8 @@ node = None
 
 for line in sys.stdin:
     line = line.strip()
-    
-    node, v = map(int, line.split())
+
+    node, v = map(int, line.split('\t', 1))
 
     if currNode == node:
         friends.add(v)
@@ -20,9 +20,8 @@ for line in sys.stdin:
                     if f1 >= f2:
                         continue                    
                     print(f"{f1} {f2}\t{currNode}")
-            print()
         friends = set([v])
-        currNode = v
+        currNode = node
 
 if currNode == node:
     for f1 in friends:
@@ -30,4 +29,3 @@ if currNode == node:
             if f1 >= f2:
                 continue
             print(f"{f1} {f2}\t{currNode}")
-        print()
