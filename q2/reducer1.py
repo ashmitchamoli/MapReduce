@@ -2,23 +2,30 @@
 """reducer1.py"""
 import sys
 
-mutualFriends = {}
+currPair = None
+# mutualFriends = {}
+pair = None
+mutualFriends = set()
 
 for line in sys.stdin:
     line = line.strip()
 
     # print(line)
-    key, value = line.split('\t', 1)
+    pair, value = line.split('\t', 1)
 
-    if key in mutualFriends:
-        mutualFriends[key].add(value)
+    if currPair == pair:
+        mutualFriends.add(value)
     else:
-        mutualFriends[key] = set([value])
+        if currPair:
+            print(f"{currPair}\t", end='')
+            for f in sorted(mutualFriends):
+                print(f"{f}", end=' ')
+            print()
+        mutualFriends = set([value])
+        currPair = pair
 
-for key in mutualFriends:
-    print(f"{key}", end='\t')
-    for value in sorted(list(mutualFriends[key])):
-        print(f"{value}", end=' ')
+if currPair == pair:
+    print(f"{currPair}\t", end='')
+    for f in sorted(mutualFriends):
+        print(f"{f}", end=' ')
     print()
-
-# ! combine both the loops later
