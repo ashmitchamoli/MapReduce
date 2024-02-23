@@ -10,6 +10,7 @@ FILES="./"
 hdfs dfs -rm -r ${HDFS_INP}/ ${HDFS_OUT}/
 hdfs dfs -mkdir -p ${HDFS_INP}/
 hdfs dfs -put ${LOCAL_INP_DIR}/* ${HDFS_INP}/
+
 hadoop jar $STREAM_JAR -D mapred.reduce.tasks=3 \
                        -input ${HDFS_INP}/ \
                        -output $HDFS_OUT/ \
