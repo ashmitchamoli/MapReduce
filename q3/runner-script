@@ -1,2 +1,60 @@
 #!/usr/bin/bash
 
+STREAM_JAR=$1
+LOCAL_INP_DIR=$2
+HDFS_INP=$3
+HDFS_OUT=$4
+HDFS_TEMP=temp/
+HDFS_TEMP_INP=temp/input/
+HDFS_TEMP_OUT=temp/output/
+FILES="./"
+INFINITY=10
+
+hdfs dfs -rm -r ${HDFS_INP}/ ${HDFS_OUT}/ ${HDFS_TEMP_INP}/ ${HDFS_TEMP_OUT}/
+hdfs dfs -mkdir -p ${HDFS_INP}/
+hdfs dfs -put ${LOCAL_INP_DIR}/* ${HDFS_INP}/
+
+# initialise input data
+hadoop jar $STREAM_JAR -D mapreduce.job.reduces=0 \
+                       -input ${HDFS_INP}/ \
+                       -output ${HDFS_TEMP_INP}/ \
+                       -mapper ${FILES}/mapper0.py \
+                       -file ${FILES}/mapper0.py \
+                       -reducer ${FILES}/reducer0.py \
+                       -file ${FILES}/reducer0.py
+
+# run a loop of INIFINITY iterations
+for i in $(seq 1 $INFINITY)
+do
+    echo "iteration $i"
+    # check if i is odd or even
+    if [ $(($i % 2)) -eq 0 ]
+    then
+        TEMP_INP_DIR=${HDFS_TEMP_OUT}
+        TEMP_OUT_DIR=${HDFS_TEMP_INP}
+    else
+        TEMP_INP_DIR=${HDFS_TEMP_INP}
+        TEMP_OUT_DIR=${HDFS_TEMP_OUT}
+    fi
+    echo "input directory: $TEMP_INP_DIR"
+    echo "output directory: $TEMP_OUT_DIR"
+    hadoop jar $STREAM_JAR -D mapred.reduce.tasks=3 \
+                           -input ${TEMP_INP_DIR}/ \
+                           -output ${TEMP_OUT_DIR}/ \
+                           -mapper ${FILES}/mapper1.py \
+                           -file ${FILES}/mapper1.py \
+                           -reducer ${FILES}/reducer1.py \
+                           -file ${FILES}/reducer1.py
+    hdfs dfs -rm -r ${TEMP_INP_DIR}/
+done
+
+# run the final mapper and reducer
+hadoop jar $STREAM_JAR -D mapreduce.job.reduces=0 \
+                       -input ${TEMP_OUT_DIR}/ \
+                       -output ${HDFS_OUT}/ \
+                       -mapper ${FILES}/mapper2.py \
+                       -file ${FILES}/mapper2.py \
+                       -reducer ${FILES}/reducer2.py \
+                       -file ${FILES}/reducer2.py
+
+hdfs dfs -rm -r ${HDFS_TEMP}/
